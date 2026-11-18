@@ -62,25 +62,64 @@
     });
   }
 
+  function addVerdict(row) {
+    if (!configured()) return Promise.resolve({ ok: false, code: 'not_configured' });
+    return fetch(rest('verdicts'), {
+      method: 'POST',
+      headers: headers({ 'Prefer': 'return=minimal' }),
+      body: JSON.stringify(row)
+    }).then(function (res) { return { ok: res.ok, code: res.ok ? null : 'http_' + res.status }; })
+      .catch(function () { return { ok: false, code: 'network' }; });
+  }
+
+  /* The student's own words go to a table with an insert policy and
+     deliberately NO select policy, so nothing can read them back out —
+     not this page, not anyone holding the publishable key. */
+  function addAccount(row) {
+    if (!configured()) return Promise.resolve({ ok: false, code: 'not_configured' });
+    return fetch(rest('accounts'), {
+      method: 'POST',
+      headers: headers({ 'Prefer': 'return=minimal' }),
+      body: JSON.stringify(row)
+    }).then(function (res) { return { ok: res.ok, code: res.ok ? null : 'http_' + res.status }; })
+      .catch(function () { return { ok: false, code: 'network' }; });
+  }
+
   var SELECT = 'company_key,company_display,round,outcome,reason_code';
+  var V_SELECT = 'company_key,company_display,round,reason_code';
 
   function getAggregate() {
     if (!configured()) return Promise.resolve(emptyAggregate('not_configured'));
 
     var entriesUrl = rest('entries?status=eq.counted&select=' + SELECT + '&limit=5000');
+    var verdictsUrl = rest('verdicts?is_test=is.false&verdict_available=is.true&select=' +
+                           V_SELECT + '&limit=5000');
     var followUrl = rest('followups?is_test=is.false&select=company_key,reason_source&limit=5000');
+
+    function soft(url) {
+      return fetch(url, { headers: headers() })
+        .then(function (res) { return res.ok ? res.json() : []; })
+        .catch(function () { return []; });
+    }
 
     return Promise.all([
       fetch(entriesUrl, { headers: headers() }).then(function (res) {
         if (!res.ok) throw new Error('http_' + res.status);
         return res.json();
       }),
-      // Follow-ups are a bonus stat: never fail the whole view over them.
-      fetch(followUrl, { headers: headers() })
-        .then(function (res) { return res.ok ? res.json() : []; })
-        .catch(function () { return []; })
+      soft(verdictsUrl),
+      soft(followUrl)
     ])
-      .then(function (both) { return aggregate(both[0], both[1]); })
+      .then(function (all) {
+        // A verdict is always about a rejection, so give it that outcome.
+        var verdictRows = all[1].map(function (v) {
+          return {
+            company_key: v.company_key, company_display: v.company_display,
+            round: v.round, outcome: 'rejected', reason_code: v.reason_code
+          };
+        });
+        return aggregate(all[0].concat(verdictRows), all[2]);
+      })
       .catch(function (err) {
         return emptyAggregate(String(err && err.message || err));
       });
@@ -179,6 +218,8 @@
     init: init,
     addEntry: addEntry,
     addFollowUp: addFollowUp,
+    addVerdict: addVerdict,
+    addAccount: addAccount,
     getAggregate: getAggregate,
     logEvent: logEvent,
     configured: configured

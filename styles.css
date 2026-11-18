@@ -169,6 +169,67 @@ input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: 1px
   cursor: pointer;
 }
 
+textarea {
+  width: 100%;
+  padding: 13px 15px;
+  font: inherit;
+  font-size: 16px; /* 16px or iOS zooms on focus */
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  resize: vertical;
+  min-height: 150px;
+}
+textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* a ticked fact */
+.choice.on {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.choice.on::after {
+  content: " \2713";
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* the one that says it wasn't their fault */
+.banner {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 7px 13px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--accent-ink);
+  background: var(--good);
+  border-radius: 999px;
+}
+
+.conf { margin: 18px 0 4px; }
+.chip-static {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.conf p { margin: 8px 0 0; }
+
+ul.plain {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  color: var(--ink-dim);
+  font-size: 15px;
+}
+ul.plain li { margin-bottom: 6px; }
+
 /* ---------- aggregate ---------- */
 .card {
   background: var(--surface);

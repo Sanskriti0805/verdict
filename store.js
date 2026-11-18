@@ -220,9 +220,62 @@
   }
 
   /* ---------- unlock state ----------
-     Set only from a confirmed write. Never optimistically. */
+     Kept from v1 so old links still behave; the cohort view is open to
+     everyone now, so nothing actually gates on it. */
   function isUnlocked() { return LS.get('vd_unlocked') === '1'; }
   function unlock() { LS.set('vd_unlocked', '1'); }
+
+  /* ---------- verdicts ----------
+     Codes go to `verdicts`, which is readable and feeds the cohort view.
+     The student's own words go to `accounts`, which can only be written to.
+     Splitting them is what lets the aggregate be public without exposing
+     anything anyone typed. */
+  function scrub(s) {
+    return String(s || '')
+      .replace(/\b[\w.+-]+@[\w-]+\.[\w.]{2,}\b/g, '[removed]')
+      .replace(/\b(?:\+?91[\s-]?)?[6-9]\d{9}\b/g, '[removed]');
+  }
+
+  function saveVerdict(draft, verdict, ms) {
+    var s = getSession();
+    var norm = D.normalizeCompany(draft.company_raw);
+    var id = uuid();
+
+    var row = {
+      id: id,
+      client_ts: new Date().toISOString(),
+      company_key: norm.key || D.UNNAMED_KEY,
+      company_display: norm.display || 'Not named',
+      role_family: draft.role_family || null,
+      round: draft.round || null,
+      facts: (draft.facts || []).join(','),
+      structural: draft.structural || null,
+      cgpa_band: draft.cgpa_band || null,
+      verdict_available: !!verdict.verdict_available,
+      reason_code: verdict.primary_reason || null,
+      attribution: verdict.attribution || null,
+      confidence: verdict.confidence || null,
+      signal_score: verdict.signal ? verdict.signal.score : null,
+      session_id: s.sid,
+      source: s.source,
+      device: s.device,
+      is_test: s.is_test,
+      took_ms: ms || null
+    };
+
+    IMPL.addVerdict(row);
+
+    var text = scrub(draft.account_text || '');
+    if (text) {
+      IMPL.addAccount({
+        id: uuid(),
+        verdict_id: id,
+        account_text: text.slice(0, 1200),
+        is_test: s.is_test
+      });
+    }
+    return id;
+  }
 
   global.VerdictStore = {
     LS: LS,
@@ -238,6 +291,7 @@
     isDuplicate: isDuplicate,
     isUnlocked: isUnlocked,
     unlock: unlock,
+    saveVerdict: saveVerdict,
     configured: function () { return IMPL.configured(); },
     init: function (cfg) { IMPL.init(cfg); }
   };
