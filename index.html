@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verdict — why students actually get rejected</title>
+<meta name="description" content="Students log one round outcome in 30 seconds. Together it shows what actually gets people cut, company by company.">
+<meta name="theme-color" content="#111318">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdict — why students actually get rejected">
+<meta property="og:description" content="Nobody tells you why you were cut. Log one round you've been through and see what's really getting people rejected, company by company.">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="#/verdict">Verdict</a>
+  <span class="tag" id="entry-count" hidden></span>
+</header>
+
+<main id="app" aria-live="polite"></main>
+
+<footer class="foot">
+  <p id="disclaimer">
+    Student-reported outcomes, unverified. Every number shows its <strong>n</strong>.
+    Not an official statement by any company.
+    To flag an entry: <a id="contact" href="#">get in touch</a>.
+  </p>
+  <p class="muted" id="seed-note" hidden></p>
+</footer>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="store.supabase.js"></script>
+<script src="store.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
