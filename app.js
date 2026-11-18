@@ -295,7 +295,9 @@
   }
 
   function renderOverall(agg, missingKey) {
-    var listed = agg.companies.filter(function (c) { return c.total >= D.MIN_N_COMPANY; });
+    var listed = agg.companies.filter(function (c) {
+      return c.total >= D.MIN_N_COMPANY && c.company_key !== D.UNNAMED_KEY;
+    });
 
     var note = '';
     if (missingKey) {

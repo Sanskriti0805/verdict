@@ -225,6 +225,12 @@
   var MIN_N_CELL = 3;
   var MIN_N_COMPANY = 5;
 
+  /* Rows where the student described a round but never named the company.
+     They count towards the cross-company picture, which is the core finding,
+     but they must never appear in the per-company ranking — attributing an
+     unnamed rejection to a named company would be inventing the data. */
+  var UNNAMED_KEY = 'not-named';
+
   global.VerdictData = {
     ROUNDS: ROUNDS,
     ROLE_FAMILIES: ROLE_FAMILIES,
@@ -234,6 +240,7 @@
     COMPANIES: COMPANIES,
     MIN_N_CELL: MIN_N_CELL,
     MIN_N_COMPANY: MIN_N_COMPANY,
+    UNNAMED_KEY: UNNAMED_KEY,
     MIN_SUBMIT_MS: MIN_SUBMIT_MS,
     MAX_ENTRIES_PER_SESSION: MAX_ENTRIES_PER_SESSION,
     normalizeCompany: normalizeCompany,
