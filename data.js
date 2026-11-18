@@ -277,7 +277,19 @@
     // Hard floor: nothing below this is ever worth a call, whatever else scored.
     var starved = words < 12 && facts.length < 2;
 
-    return { score: score, words: words, facts: facts.length, enough: !starved && score >= 4 };
+    /* A reported structural cause is self-sufficient evidence: "they said there
+       were only three seats" is already the whole verdict and needs no further
+       detail. Refusing it would be the gate working against its own purpose. */
+    var reported = ['role_filled', 'seats_capped', 'applied_late', 'ineligible']
+      .indexOf(input.structural) !== -1;
+
+    return {
+      score: score,
+      words: words,
+      facts: facts.length,
+      structural_reported: reported,
+      enough: reported || (!starved && score >= 4)
+    };
   }
 
   /* What to ask for when the account is too thin — targeted at what's missing,
