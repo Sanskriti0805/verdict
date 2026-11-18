@@ -68,6 +68,27 @@ Channel attribution is the `?s=` parameter, never `document.referrer` — WhatsA
 strips referrers. Suggested codes: `?s=wa1` first batch, `?s=wa2` after the change ships,
 `?s=rd1` cold Reddit DMs (strangers), `?s=lnk` anywhere else.
 
+## Seed rows vs test rows — they are not the same flag
+
+Easy to get backwards, and getting it backwards makes the gate show an empty aggregate.
+
+| | `is_test` | `status` | in the aggregate? | in the funnel? |
+|---|---|---|---|---|
+| Your own device (`/?builder=1`) | `true` | `excluded_test` | no | no |
+| Seed rows from interviews / Reddit | **`false`** | `counted` | **yes** | no — filter on `source='seed'` |
+| A real tester | `false` | `counted` | yes | yes |
+
+Seeds must be `is_test = false`, or `classify()` marks them `excluded_test` and they never
+reach the aggregate — which defeats the whole point of seeding, since give-to-get needs
+something to give. Keep them out of the reported funnel by excluding `source = 'seed'`,
+not by flagging them as test data.
+
+## Clearing smoke-test rows
+
+The anon key cannot delete anything — that is the security model working, not a bug. Remove
+test rows from the Supabase **Table Editor**, which runs as the service role. Do this before
+you publish the real link and start the cohort clock.
+
 ## Display floors
 
 A cell needs **n ≥ 3** to show a percentage; a company needs **n ≥ 5** to appear in the ranking.
