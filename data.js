@@ -222,6 +222,80 @@
   /* Display floors. One person must not be able to manufacture a published
      claim about a named company — this is the anti-spam and the anti-defamation
      control at the same time. */
+  /* Things that happened in the round. Three taps buy grounding a student
+     never thinks to narrate, and each one is evidence the verdict may cite. */
+  var FACTS = [
+    { code: 'live_code',      label: 'They asked me to write code, live' },
+    { code: 'deep_project',   label: 'They went deep into one of my projects' },
+    { code: 'never_heard',    label: 'They asked something I had never heard of' },
+    { code: 'ran_out',        label: "I ran out of time, or didn't finish" },
+    { code: 'very_short',     label: 'It was over in under ten minutes' },
+    { code: 'asked_academics',label: 'They asked about CGPA, backlogs, branch or batch' },
+    { code: 'asked_logistics',label: 'They asked about joining date, location or notice' },
+    { code: 'ghosted',        label: "They said they'd get back, and never did" },
+    { code: 'bare_rejection', label: 'I got a rejection mail with no reason' }
+  ];
+
+  /* Asked as fact, never as "was it unfair?" — that phrasing would prime
+     self-exoneration and corrupt the structural signal. */
+  var STRUCTURAL = [
+    { code: 'role_filled',  label: 'They said the role was already filled or on hold' },
+    { code: 'seats_capped', label: 'They said there were only a few seats' },
+    { code: 'applied_late', label: 'I applied after the deadline, or the form had closed' },
+    { code: 'ineligible',   label: "I was told I didn't meet an eligibility rule" },
+    { code: 'none',         label: 'None of this' },
+    { code: 'dont_recall',  label: "Don't remember" }
+  ];
+
+  /* Concrete tokens that suggest the account describes something real rather
+     than only a feeling. Deliberately short and interview-specific. */
+  var CONCRETE = ['sql','dsa','oop','dbms','pointer','linked','array','string','react',
+    'node','python','java','pandas','project','resume','hr','aptitude','coding','code',
+    'algorithm','database','api','git','os','network','interview','round','question',
+    'cgpa','backlog','cutoff','deadline','seats','overfit','model','test','debug'];
+
+  /* Decides whether an account is worth a model call at all.
+     "idk they rejected me" scores 1 and costs nothing. */
+  function signalScore(input) {
+    var text = String(input.account_text || '').trim();
+    var words = text ? text.split(/\s+/).length : 0;
+    var facts = (input.facts || []).filter(function (f) { return f && f !== 'none'; });
+    var score = 0;
+
+    if (words >= 40) score += 2;
+    else if (words >= 20) score += 1;
+
+    score += Math.min(facts.length, 3);
+
+    if (input.structural && input.structural !== 'none' && input.structural !== 'dont_recall') score += 1;
+    if (String(input.quoted_line || '').trim().split(/\s+/).filter(Boolean).length >= 3) score += 1;
+    if (input.round && input.round !== 'no_round_silence') score += 1;
+
+    var lower = text.toLowerCase();
+    if (/\d/.test(lower) || CONCRETE.some(function (t) { return lower.indexOf(t) !== -1; })) score += 1;
+
+    // Hard floor: nothing below this is ever worth a call, whatever else scored.
+    var starved = words < 12 && facts.length < 2;
+
+    return { score: score, words: words, facts: facts.length, enough: !starved && score >= 4 };
+  }
+
+  /* What to ask for when the account is too thin — targeted at what's missing,
+     which beats any generic "please add more detail". */
+  function missingPrompts(input) {
+    var out = [];
+    var text = String(input.account_text || '').trim();
+    var words = text ? text.split(/\s+/).length : 0;
+    var facts = (input.facts || []).filter(function (f) { return f && f !== 'none'; });
+
+    if (!facts.length) out.push('Did they ask you to write code, or go into a project?');
+    if (words < 25) out.push('What did they ask you first?');
+    if (!/\b(said|told|mail|email|call|result|back)\b/i.test(text)) {
+      out.push('How did it end — did they say anything?');
+    }
+    return out.slice(0, 3);
+  }
+
   var MIN_N_CELL = 3;
   var MIN_N_COMPANY = 5;
 
@@ -241,6 +315,10 @@
     MIN_N_CELL: MIN_N_CELL,
     MIN_N_COMPANY: MIN_N_COMPANY,
     UNNAMED_KEY: UNNAMED_KEY,
+    FACTS: FACTS,
+    STRUCTURAL: STRUCTURAL,
+    signalScore: signalScore,
+    missingPrompts: missingPrompts,
     MIN_SUBMIT_MS: MIN_SUBMIT_MS,
     MAX_ENTRIES_PER_SESSION: MAX_ENTRIES_PER_SESSION,
     normalizeCompany: normalizeCompany,
