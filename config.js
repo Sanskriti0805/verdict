@@ -4,8 +4,8 @@
    nothing else. Never add update or delete to those policies. */
 
 window.VerdictConfig = {
-  SUPABASE_URL: 'PASTE_PROJECT_URL_HERE',
-  SUPABASE_ANON_KEY: 'PASTE_PUBLISHABLE_ANON_KEY_HERE',
+  SUPABASE_URL: 'https://kllaeanltszvsgbludns.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_A1GcgrjpU7XBXDQfico1xA_-RQ2OR2d',
 
   // Shown in the footer so anyone can flag an entry.
   CONTACT_EMAIL: 'sanskritiarora2005@gmail.com',
