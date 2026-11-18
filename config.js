@@ -8,7 +8,7 @@ window.VerdictConfig = {
   SUPABASE_ANON_KEY: 'PASTE_PUBLISHABLE_ANON_KEY_HERE',
 
   // Shown in the footer so anyone can flag an entry.
-  CONTACT_EMAIL: 'parth@valcat.co',
+  CONTACT_EMAIL: 'sanskritiarora2005@gmail.com',
 
   // Rows logged from our own interviews and from public Reddit threads.
   // Disclosed on the page — seeding is fine, hiding it is not.
